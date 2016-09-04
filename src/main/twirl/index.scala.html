@@ -1,0 +1,99 @@
+@(date: java.util.Date)
+@main {
+  <div id="header">
+    <h1>Ethical Advisor</h1>
+  </div>
+
+<div id="nav">
+
+
+  <input type="file" id="fileinput" />
+  <script type="text/javascript">
+  function readSingleFile(evt) {
+    //Retrieve the first (and only!) File from the FileList object
+    var f = evt.target.files[0];
+    if (f) {
+      var r = new FileReader();
+      r.onload = function(e) {
+	      var contents = r.result;
+
+
+           //$('#aboutDescription').val(contents);
+           editor.setValue(contents);
+      }
+      r.readAsText(f);
+    } else {
+      alert("Failed to load file");
+    }
+  }
+  document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
+</script>
+
+  <script type="text/javascript">
+ function myTestGetFunction() {
+  $(function()
+    {
+        $.get("/entities", function(data, textStatus)
+        {
+                alert("Done, with the following status: " + textStatus + "Here is the response: " + data);
+        });
+    }
+   );
+};
+</script>
+
+  <button onclick="myTestGetFunction()"><p style="font-size:12px">Test Function</p></button>
+
+</div>
+
+<div id="section">
+  <div id="mynetwork"></div>
+
+  <script type="text/javascript">
+  // create an array with nodes
+  var nodes = new vis.DataSet([
+    {id: 1, label: 'Node 1'},
+    {id: 2, label: 'Node 2'},
+    {id: 3, label: 'Node 3'},
+    {id: 4, label: 'Node 4'},
+    {id: 5, label: 'Node 5'}
+  ]);
+
+  // create an array with edges
+  var edges = new vis.DataSet([
+    {from: 1, to: 3},
+    {from: 1, to: 2},
+    {from: 2, to: 4},
+    {from: 2, to: 5}
+  ]);
+
+  // create a network
+  var container = document.getElementById('mynetwork');
+  var data = {
+    nodes: nodes,
+    edges: edges
+  };
+  var options = {};
+  var network = new vis.Network(container, data, options);
+</script>
+
+  <div id="mynetwork1"></div>
+</div>
+
+<div id="footer">
+
+  Console
+  <h1>Twirl reporting for duty at @date.toString!</h1>
+  <br>
+  <textarea rows="15" cols="150" id="outputDescription"
+            style="resize: none;" data-role="none"></textarea>
+
+
+
+</div>
+
+
+
+
+
+}

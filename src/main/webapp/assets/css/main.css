@@ -1,0 +1,31 @@
+dl {
+  clear: both;
+  padding: 10px;
+}
+dl dt {
+  float: left;
+  width: 60px;
+  font-weight: bold;
+}
+dl dd {
+  float: left;
+  margin-left: 10px;
+}
+dl .info {
+  display: none;
+}
+dl .error {
+  color: red;
+}
+.buttons {
+  clear: both;
+  padding: 10px;
+}
+#persons .name {
+  display: inline-block;
+  width: 60px;
+}
+#persons .age {
+  display: inline-block;
+}
+/*# sourceMappingURL=main.css.map */
