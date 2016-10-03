@@ -4,7 +4,6 @@ package au.example.app
 import edu.uci.ics.jung.graph._
 import edu.uci.ics.jung.graph.util.Graphs
 
-
 import scala.util.parsing.combinator._
 
 /**
@@ -83,12 +82,100 @@ object CoherenceModel  {
 
 }
 
-/*
-abstract class NetModel
-case class Network(name: String) extends NetModel
+abstract class CognitiveModel
+abstract class Net
+abstract class Node extends Net
+case class CogModel(netExpr: NetExpression, netspec: Network) extends CognitiveModel
+case class NetExpression(name:String, portparams: Option[List[String]]) extends Net
+case class Network(name: String, portlist: Option[List[Port]],portmapper: Option[Map[Port, Node]],evidences: List[Evidence],
+                   hypotheses: List[Hypothesis], coherenceConstraints: List[Constraint]) extends Net
+case class Port(name:String, ptype:String) extends Net
+case class Evidence(name:String,explanation:Option[String], defaultActivation:Double) extends Node
+case class Hypothesis(name:String,explanation: Option[String],defaultActivation:Double) extends Node
+case class Constraint (source:List[String], target:String, ctype: String, strength:Double) extends Net
+case class TargetMap(target:String, strength:Double) extends Net
+
 class CoherenceNet extends JavaTokenParsers {
-  def netexpr: Parser[NetModel] = "network"~ident~"="~"{"~evidenceList~"}" ^^ {case ident => Network(ident.toString)}
-  //def evidenceList: Parser[NetModel] = "evidences"
+  def cmspec: Parser[CogModel] = "cogModel"~"{"~>netexpr~netspec<~"}" ^^
+    {case netexpr~netspec => CogModel(netexpr,netspec)}
+  def netexpr: Parser[NetExpression] = ident~"="~>ident~opt(parameterlist) ^^
+    {case name~parameterlist => NetExpression(name.toString(),parameterlist)}
+  def parameterlist: Parser[List[String]] = "("~>repsep(ident,",")<~")" ^^ (_.toString() :: List())
+  def netspec: Parser[Network] = "net"~>ident~opt(portlist)~"="~"{"~opt(portmapper)~evidencelist~hypothesislist~constraintlist~"}" ^^
+    {case ident~portlist~"="~"{"~portmapper~evidencelist~hypothesislist~constraintlist~"}" =>
+      Network(ident.toString(),portlist,portmapper,evidencelist,hypothesislist,constraintlist)}
+  def portlist : Parser[List[Port]] = "("~>inportlist~outportlist<~")" ^^
+    {case inportlist~outportlist => inportlist ::: outportlist}
+  def inportlist: Parser[List[Port]] = "in"~":"~>repsep(inportmember, ",")<~";" ^^ (List() ++ _)
+  def outportlist: Parser[List[Port]] = "in-out"~":"~>repsep(outportmember, ",") ^^ (List() ++ _)
+  def inportmember : Parser[Port] = ident ^^ {case name => Port(name.toString(),"in")}
+  def outportmember : Parser[Port] = ident ^^ {case name => Port(name.toString(),"out")}
+  def portmapper: Parser[Map[Port,Node]] = "["~>inportmapper~outportmapper<~"]" ^^
+    {case inportmapper~outportmapper => inportmapper ++ outportmapper}
+  def inportmapper: Parser[Map[Port,Node]] = repsep(inportmap, ",")<~";" ^^ (Map() ++ _)
+  def outportmapper: Parser[Map[Port,Node]] = repsep(outportmap, ",") ^^ (Map() ++ _)
+  def inportmap : Parser[(Port,Node)] = ident~"->"~ident ^^
+    {case src~"->"~tgt => (Port(src.toString(),"in"),Evidence(tgt.toString(),Some(""),0.2))}
+  def outportmap: Parser[(Port,Node)] =  ident~"->"~ident ^^
+    {case src~"->"~tgt => (Port(tgt.toString(),"out"),Hypothesis(src.toString(),Some(""),0.2))}
+  def evidencelist: Parser[List[Evidence]] = "data"~"{"~>rep(evidencemember)<~"}" ^^  (List() ++ _)
+  def evidencemember: Parser[Evidence] = "evidence("~>ident~opt(explanation)~","~floatingPointNumber<~")" ^^
+    {case ident~expl~","~value => Evidence(ident.toString(),expl,value.toDouble) }
+  def explanation : Parser[String] = ":"~>stringLiteral ^^ {case expl => expl}
+  def hypothesislist: Parser[List[Hypothesis]] = "hypotheses"~"{"~>rep(hypothesismember)<~"}" ^^  (List() ++ _)
+  def hypothesismember: Parser[Hypothesis] = "hypothesis("~>ident~opt(explanation)~","~floatingPointNumber<~")" ^^
+    {case ident~expl~","~value => Hypothesis(ident.toString(),expl,value.toDouble) }
+  def constraintlist: Parser[List[Constraint]] = "constraints"~"{"~>rep(constraintmember)<~"}" ^^  (List() ++ _)
+  def constraintmember: Parser[Constraint] =  basicconstraint | compoundconstraint
+  def basicconstraint: Parser[Constraint] = ident~"explains"~ident~"at"~floatingPointNumber ^^
+    {case src~"explains"~tgt~"at"~value => Constraint(src.toString :: List(),tgt.toString,"explains",value.toDouble)} |
+    ident~"contradicts"~ident~"at"~floatingPointNumber ^^
+      {case src~"contradicts"~tgt~"at"~value => Constraint(src.toString :: List(),tgt.toString,"contradicts",value.toDouble)}
+  def compoundconstraint : Parser[Constraint] = srclist~"explains"~ident~"at"~floatingPointNumber ^^
+    {case srclist~"explains"~tgt~"at"~value => Constraint(srclist,tgt,"explains",value.toDouble) }
+  def srclist: Parser[List[String]] = "["~>repsep(ident, ",")<~"]" ^^ (List() ++ _)
 
 }
-*/
+
+
+object NetExpr extends CoherenceNet {
+  def parseExpression(inp: String): Unit = {
+    println("input:" + inp)
+    if ((parseAll(cmspec, inp).successful) == true) {
+      println("get: " + parseAll(cmspec, inp).get)
+      var myNet: Network = parseAll(cmspec, inp).get.asInstanceOf[CogModel].netspec
+      println("The name of the network is " + myNet.name)
+
+      myNet.portlist match {
+        case Some(s) => {
+          for (myElem <- s)
+            println("My port is " + myElem.name + " with type " + myElem.ptype)
+        }
+        case None => println("No port listed")
+      }
+
+      myNet.portmapper match {
+        case Some(s) => {
+          for (myElem <- s) {
+            if (myElem._2.isInstanceOf[Evidence] == true) {
+              println("My port " + myElem._1.name + " is connected to " + myElem._2.asInstanceOf[Evidence].name)
+            }
+            else {
+              println("My port " + myElem._1.name + " is connected to " + myElem._2.asInstanceOf[Hypothesis].name)
+            }
+          }
+        }
+        case None =>  println("No port mapping available")
+      }
+
+      for (myElem <- myNet.evidences)
+        println("My data is " + myElem.name + " with activation " + myElem.defaultActivation)
+      for (myElem <- myNet.hypotheses)
+        println("My hypothesis is " + myElem.name + " with activation " + myElem.defaultActivation)
+      for (myElem <- myNet.coherenceConstraints)
+        println("My constraint is " + myElem.source +" " + myElem.ctype + " "+ myElem.target + " at " + myElem.strength)
+
+    }
+    else println("invalid input")
+  }
+}

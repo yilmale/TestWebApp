@@ -33,6 +33,7 @@
  function myTestGetFunction() {
   $(function()
     {
+
         $.get("/entities", function(data, textStatus)
         {
                 alert("Done, with the following status: " + textStatus + "Here is the response: " + data);
@@ -42,9 +43,37 @@
 };
 </script>
 
+
+
   <button onclick="myTestGetFunction()"><p style="font-size:12px">Test Function</p></button>
 
-  <button onclick="myJsonFunction()"><p style="font-size:12px">JSON Function</p></button>
+
+  <script type="text/javascript">
+ function myParseFunction() {
+  $(function()
+    {
+
+        $.post("/parsemodel",
+        {
+                model: editor.getValue()
+
+        },
+        function(data, textStatus)
+        {
+               alert("Response from server: " + data);
+
+
+        });
+
+      });
+  };
+
+</script>
+
+
+
+
+  <button onclick="myParseFunction()"><p style="font-size:12px">Parse</p></button>
 
 </div>
 
@@ -92,14 +121,16 @@
 <script>
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/eclipse");
-    editor.getSession().setMode("ace/mode/javascript");
+    editor.getSession().setMode("ace/mode/scala");
+    document.getElementById('editor').style.fontSize='11px';
 </script>
+
 
 
 <div id="footer">
 
   Console
-  <h1>Twirl reporting for duty at @date.toString!</h1>
+  <h1>Twirl used at @date.toString!</h1>
   <br>
   <textarea rows="15" cols="150" id="outputDescription"
             style="resize: none;" data-role="none"></textarea>
