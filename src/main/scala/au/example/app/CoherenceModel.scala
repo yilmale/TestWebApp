@@ -82,6 +82,7 @@ object CoherenceModel  {
 
 }
 
+
 abstract class CognitiveModel
 abstract class Net
 abstract class Node extends Net
@@ -94,8 +95,13 @@ case class Evidence(name:String,explanation:Option[String], defaultActivation:Do
 case class Hypothesis(name:String,explanation: Option[String],defaultActivation:Double) extends Node
 case class Constraint (source:List[String], target:String, ctype: String, strength:Double) extends Net
 case class TargetMap(target:String, strength:Double) extends Net
+case class Cogent(name: String, dataModel: List[String], cModel:CogModel)
 
 class CoherenceNet extends JavaTokenParsers {
+  def cogentspec: Parser[Cogent] = "cogent"~>ident~"{"~dataspec~cmspec<~"}" ^^
+    {case name~"{"~data~cm => Cogent(name.toString(),data,cm)}
+  def dataspec: Parser[List[String]] = "datamodel"~"{"~>repsep(datastmt,";")<~"}" ^^ (List() ++ _)
+  def datastmt: Parser[String] = stringLiteral ^^ {case stmt => stmt}
   def cmspec: Parser[CogModel] = "cogModel"~"{"~>netexpr~netspec<~"}" ^^
     {case netexpr~netspec => CogModel(netexpr,netspec)}
   def netexpr: Parser[NetExpression] = ident~"="~>ident~opt(parameterlist) ^^
@@ -106,8 +112,8 @@ class CoherenceNet extends JavaTokenParsers {
       Network(ident.toString(),portlist,portmapper,evidencelist,hypothesislist,constraintlist)}
   def portlist : Parser[List[Port]] = "("~>inportlist~outportlist<~")" ^^
     {case inportlist~outportlist => inportlist ::: outportlist}
-  def inportlist: Parser[List[Port]] = "in"~":"~>repsep(inportmember, ",")<~";" ^^ (List() ++ _)
-  def outportlist: Parser[List[Port]] = "in-out"~":"~>repsep(outportmember, ",") ^^ (List() ++ _)
+  def inportlist: Parser[List[Port]] = "inp"~":"~>repsep(inportmember, ",")<~";" ^^ (List() ++ _)
+  def outportlist: Parser[List[Port]] = "outp"~":"~>repsep(outportmember, ",") ^^ (List() ++ _)
   def inportmember : Parser[Port] = ident ^^ {case name => Port(name.toString(),"in")}
   def outportmember : Parser[Port] = ident ^^ {case name => Port(name.toString(),"out")}
   def portmapper: Parser[Map[Port,Node]] = "["~>inportmapper~outportmapper<~"]" ^^
@@ -139,11 +145,16 @@ class CoherenceNet extends JavaTokenParsers {
 
 
 object NetExpr extends CoherenceNet {
+  def testFunc(body: =>Unit) {body}
   def parseExpression(inp: String): Unit = {
     println("input:" + inp)
-    if ((parseAll(cmspec, inp).successful) == true) {
-      println("get: " + parseAll(cmspec, inp).get)
-      var myNet: Network = parseAll(cmspec, inp).get.asInstanceOf[CogModel].netspec
+    if ((parseAll(cogentspec, inp).successful) == true) {
+      println("get: " + parseAll(cogentspec, inp).get)
+      var dataMod: List[String] = parseAll(cogentspec, inp).get.asInstanceOf[Cogent].dataModel
+      println("The data model is " + dataMod)
+      //var dataMod1 : String = "println(5)"
+      //testFunc {dataMod1.asInstanceOf[Unit]}
+      var myNet: Network = parseAll(cogentspec, inp).get.asInstanceOf[Cogent].cModel.netspec
       println("The name of the network is " + myNet.name)
 
       myNet.portlist match {

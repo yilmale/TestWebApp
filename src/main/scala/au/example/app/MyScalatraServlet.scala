@@ -14,7 +14,6 @@ class MyScalatraServlet extends TestWebAppStack  {
 
   post("/parsemodel") {
     val modelSrc = params("model")
-    println(modelSrc)
     NetExpr.parseExpression(modelSrc)
     Ok("Parsed data")
   }
@@ -22,29 +21,34 @@ class MyScalatraServlet extends TestWebAppStack  {
   get("/entities") {
     val inpNet : String =
       """
-     cogModel  {
+     cogent producer {
 
-     cm = X(A,B,C)
-
-     net X(in: P,Q; in-out: Z) = {
-      [P->A, Q->B; E->Z]
-        data {
-          evidence(A,0.5)
-          evidence(B:"Test2",0.7)
-        }
-
-        hypotheses {
-          hypothesis(C:"Test3",0.3)
-          hypothesis(D: "Test4",0.9)
-          hypothesis(E,0.6)
-        }
-
-        constraints {
-          C explains B at 0.5
-          C contradicts D at 0.7
-          [D, E] explains A at 0.6
+       datamodel {
+         "This is a string"
        }
-      }
+       cogModel  {
+        cm = X(A,B,C)
+
+        net X(inp: P,Q; outp: Z) = {
+          [P->A, Q->B; E->Z]
+            data {
+              evidence(A,0.5)
+              evidence(B:"Test2",0.7)
+            }
+
+            hypotheses {
+              hypothesis(C:"Test3",0.3)
+              hypothesis(D: "Test4",0.9)
+              hypothesis(E,0.6)
+            }
+
+            constraints {
+              C explains B at 0.5
+              C contradicts D at 0.7
+              [D, E] explains A at 0.6
+            }
+        }
+       }
      }
       """
     NetExpr.parseExpression(inpNet)
