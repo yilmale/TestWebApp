@@ -1,0 +1,18 @@
+ @(formalName: String)
+
+    class Point(var x: Int, var y: Int) {
+
+      var pName:String = "@formalName"
+      def move(dx: Int, dy: Int): Unit = {
+        x = x + dx
+        y = y + dy
+      }
+
+      def report(): Unit = {
+        println(pName)
+      }
+
+      override def toString: String =
+        "(" + x + ", " + y + ")"
+    }
+
