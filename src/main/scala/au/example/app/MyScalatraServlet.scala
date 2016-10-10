@@ -24,6 +24,8 @@ class MyScalatraServlet extends TestWebAppStack  {
   post("/parsemodel") {
     val modelSrc = params("model")
     //NetExpr.parseExpression(modelSrc)
+
+    /*
     Eval[Unit](modelSrc)
 
     val bFactory = BehaviorFactory("/Users/yilmaz/external.scala")
@@ -47,6 +49,7 @@ class MyScalatraServlet extends TestWebAppStack  {
     val mysrc = txt.test("testtemplate").toString()
 
     println(mysrc)
+    */
 
     val execsrc = txt.execmodel("au.example.app._","A1",modelSrc).toString()
 
