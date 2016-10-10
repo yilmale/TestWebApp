@@ -1,6 +1,6 @@
  @(formalName: String)
 
-    class Point(var x: Int, var y: Int) {
+    class Point(var x: Int, var y: Int) extends AbsPoint {
 
       var pName:String = "@formalName"
       def move(dx: Int, dy: Int): Unit = {
@@ -15,4 +15,6 @@
       override def toString: String =
         "(" + x + ", " + y + ")"
     }
+
+
 
