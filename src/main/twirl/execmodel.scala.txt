@@ -1,0 +1,10 @@
+@(importName: String, actionName: String, funcStr: String)
+
+import @importName
+
+
+new PointModel {
+  override def getBehavior() = new Point("@actionName",() => {@funcStr}) {
+    var xp : Integer = 5
+  }
+}
