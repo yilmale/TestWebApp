@@ -3,8 +3,22 @@
 import @importName
 
 
-new PointModel {
-  override def getBehavior() = new Point("@actionName",() => {@funcStr}) {
+new PointModel("Test") {
+
+   var x: String = name
+   var i: Int = 0
+   var m: Map[String,() => Unit] = Map(
+            ("x", () => {
+               @funcStr
+               })
+          )
+
+   override def getBehavior() = new Point("@actionName",() => {@funcStr}) {
     var xp : Integer = 5
+  }
+
+  override def exec(funcName: String): Unit = {
+        var myfn = m(funcName)
+        myfn()
   }
 }

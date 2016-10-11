@@ -6,8 +6,9 @@ package au.example.app
 
 case class Point(var x: String, var y: () => Unit)
 
-abstract class PointModel {
+abstract class PointModel(var name:String) {
   def getBehavior() : Point
+  def exec(funcName: String)
 }
 case class PointFactory(src: String) {
   import reflect.runtime.currentMirror

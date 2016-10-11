@@ -58,11 +58,11 @@ class MyScalatraServlet extends TestWebAppStack  {
 
     val pFactory = PointFactory(execsrc)
     val pb = pFactory.make()
-    val myp = pb.getBehavior()
+    //val myp = pb.getBehavior()
 
-    println(myp)
+    println(pb)
 
-    myp.y()
+    pb.exec("x")
 
     Ok("Parsed data")
   }
