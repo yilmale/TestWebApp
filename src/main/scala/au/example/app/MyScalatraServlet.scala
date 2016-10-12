@@ -64,7 +64,7 @@ class MyScalatraServlet extends TestWebAppStack  {
 
     pb.exec("x")
 
-    Ok("Parsed data")
+    Ok("Parsed data input")
   }
 
   get("/entities") {
@@ -100,10 +100,14 @@ class MyScalatraServlet extends TestWebAppStack  {
        }
      }
       """
-    //NetExpr.parseExpression(inpNet)
+    NetExpr.parseExpression(inpNet)
 
     //val x = html.index.render(new java.util.Date).toString()
     //println(x)
+
+    var mylist = inpNet split "hypothesis"
+
+    for (p <- mylist) println(p)
 
 
 
